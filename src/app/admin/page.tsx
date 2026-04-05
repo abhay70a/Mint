@@ -46,7 +46,7 @@ export default function AdminOverviewPage() {
 
       <div className="kpi-grid">
         {kpis.map((k, i) => (
-          <Card key={i} className="kpi-card">
+          <Card key={k.label || i} className="kpi-card">
             <div className="kpi-content">
               <span className="label">{k.label}</span>
               <span className="value">{k.value}</span>

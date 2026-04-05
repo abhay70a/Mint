@@ -389,7 +389,7 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
           >
             {items.map((item, index) => (
               <li
-                key={index}
+                key={item.href || index}
                 className={`gooey-nav-item ${activeIndex === index ? 'active' : ''}`}
               >
                 <Link
