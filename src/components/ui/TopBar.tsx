@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { Bell, Search, User, Settings, LogOut, CheckCircle2, Clock, X, MessageSquare, Loader2 } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import GooeyNav from './GooeyNav'
+import dynamic from 'next/dynamic'
+
+const GooeyNav = dynamic(() => import('./GooeyNav'), { ssr: false })
 
 export const TopBar: React.FC = () => {
   const router = useRouter()
