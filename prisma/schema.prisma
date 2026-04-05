@@ -1,0 +1,197 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+enum RequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum LogAction {
+  AUTH_LOGIN
+  AUTH_LOGOUT
+  AUTH_FAILED_LOGIN
+  AUTH_PASSWORD_RESET
+  AUTH_ROLE_CHANGED
+  REQUEST_CREATED
+  REQUEST_UPDATED
+  REQUEST_STATUS_CHANGED
+  REQUEST_DELETED
+  REQUEST_FILE_ATTACHED
+  FILE_UPLOADED
+  FILE_DELETED
+  MESSAGE_SENT
+  ADMIN_USER_SUSPENDED
+  USER_UPDATED
+  ADMIN_SETTINGS_CHANGED
+  SYSTEM_ERROR
+  SYSTEM_RATE_LIMITED
+}
+
+// ─── MODELS ───────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  fullName     String
+  avatarUrl    String?
+  role         Role      @default(CLIENT)
+  isActive     Boolean   @default(true)
+  isSuspended  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime?
+
+  requests     Request[]
+  messages     Message[]
+  logs         AuditLog[]
+  sessions     Session[]
+  files        File[]
+  notifications Notification[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  refreshToken String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshToken])
+}
+
+model Request {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  priority    Priority      @default(MEDIUM)
+  status      RequestStatus @default(PENDING)
+  category    String?
+  clientId    String
+  assignedTo  String?
+  adminNote   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  resolvedAt  DateTime?
+
+  client      User          @relation(fields: [clientId], references: [id])
+  files       File[]
+  messages    Message[]
+  statusLogs  StatusLog[]
+
+  @@index([clientId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+model StatusLog {
+  id         String        @id @default(cuid())
+  requestId  String
+  fromStatus RequestStatus?
+  toStatus   RequestStatus
+  changedBy  String
+  note       String?
+  createdAt  DateTime      @default(now())
+
+  request    Request       @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+}
+
+model File {
+  id          String   @id @default(cuid())
+  requestId   String
+  uploadedBy  String
+  fileName    String
+  storageKey  String   @unique
+  mimeType    String
+  sizeBytes   Int
+  createdAt   DateTime @default(now())
+
+  request     Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [uploadedBy], references: [id])
+
+  @@index([requestId])
+  @@index([uploadedBy])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  requestId   String
+  senderId    String
+  body        String
+  isAdminNote Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  request     Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sender      User     @relation(fields: [senderId], references: [id])
+
+  @@index([requestId])
+  @@index([senderId])
+}
+
+model AuditLog {
+  id         String    @id @default(cuid())
+  userId     String?
+  action     LogAction
+  entityType String?
+  entityId   String?
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}
