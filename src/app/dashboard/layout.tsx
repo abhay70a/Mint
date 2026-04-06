@@ -2,13 +2,21 @@
 import React, { useEffect, useState } from 'react'
 
 import { JWTPayload, verifyAccessToken } from '@/lib/auth/jwt'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<JWTPayload | null>(null)
   const router = useRouter()
 
+  const searchParams = useSearchParams()
+  const isDemo = searchParams.get('mode') === 'demo'
+
   useEffect(() => {
+    if (isDemo) {
+      setUser({ id: 'demo-user', name: 'Demo User', role: 'USER', email: 'demo@mint.app' } as any)
+      return
+    }
+
     const token = localStorage.getItem('accessToken')
     if (!token) {
       router.push('/login')
@@ -21,7 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     } catch (err) {
       router.push('/login')
     }
-  }, [router])
+  }, [router, isDemo])
 
   if (!user) return null
 

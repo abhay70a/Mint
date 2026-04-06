@@ -1,14 +1,17 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import dynamic from 'next/dynamic'
+import { isDemoMode } from '@/lib/utils/demo'
 
 const GooeyNav = dynamic(() => import('@/components/ui/GooeyNav'), { ssr: false })
 
 export function Navbar() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const demoMode = isDemoMode(searchParams)
 
   const navItems = [
     { label: 'Services', href: '/services' },
@@ -25,21 +28,31 @@ export function Navbar() {
 
   return (
     <nav className="navbar">
-      <Link href="/" className="logo" style={{ color: 'var(--mint-primary)', textShadow: 'var(--mint-glow)', fontSize: '36px', fontWeight: 900, letterSpacing: '0.1em' }}>MINT</Link>
+      <Link href={demoMode ? '/?mode=demo' : '/'} className="logo" style={{ color: 'var(--mint-primary)', textShadow: 'var(--mint-glow)', fontSize: '36px', fontWeight: 900, letterSpacing: '0.1em' }}>MINT</Link>
       <div className="nav-links">
         <div className="desktop-nav">
-          <GooeyNav 
-            items={navItems} 
-            initialActiveIndex={getActiveIndex()} 
-            particleCount={10}
-          />
+          {!demoMode && (
+            <GooeyNav 
+              items={navItems} 
+              initialActiveIndex={getActiveIndex()} 
+              particleCount={10}
+            />
+          )}
         </div>
-        <Link href="/login">
-          <Button variant="ghost">Login</Button>
-        </Link>
-        <Link href="/signup">
-          <Button variant="primary" size="sm">Get Started</Button>
-        </Link>
+        {!demoMode ? (
+          <>
+            <Link href="/login">
+              <Button variant="ghost">Login</Button>
+            </Link>
+            <Link href="/signup">
+              <Button variant="primary" size="sm">Get Started</Button>
+            </Link>
+          </>
+        ) : (
+          <Link href="/">
+             <Button variant="outline" size="sm">Exit Demo</Button>
+          </Link>
+        )}
       </div>
       <style jsx>{`
         .navbar {

@@ -6,6 +6,9 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET)
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
+  const isDemo = req.nextUrl.searchParams.get('mode') === 'demo'
+  const isDemoUI = pathname === '/' || pathname === '/demo' || pathname === '/dashboard'
+
   // Public paths (no auth required)
   if (
     pathname === '/' ||
@@ -16,7 +19,9 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/signup') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/_next') ||
-    pathname.includes('.')
+    pathname.includes('.') ||
+    pathname === '/demo' ||
+    (isDemo && isDemoUI)
   ) {
     return NextResponse.next()
   }

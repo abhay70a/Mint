@@ -140,11 +140,6 @@ export default function LoginPage() {
             <p>New to Mint? <Link href="/signup">Create an account</Link></p>
           </div>
         </Card>
-
-        <div className="demo-creds">
-          <p><strong>Demo Admin:</strong> admin@mint.app / Admin1234!</p>
-          <p><strong>Demo Client:</strong> client@mint.app / Client1234!</p>
-        </div>
       </div>
 
       <style jsx>{`
@@ -245,16 +240,7 @@ export default function LoginPage() {
         }
         .card-footer :global(a) { color: var(--mint-primary); font-weight: 600; }
 
-        .demo-creds {
-          padding: var(--space-4);
-          background: var(--bg-secondary);
-          border: 1px solid var(--bg-tertiary);
-          border-radius: var(--radius-md);
-          font-size: 12px;
-          color: var(--text-secondary);
-          text-align: center;
-        }
-        .demo-creds strong { color: var(--text-primary); }
+        .card-footer :global(a) { color: var(--mint-primary); font-weight: 600; }
       `}</style>
     </div>
   )

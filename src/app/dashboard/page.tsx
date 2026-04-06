@@ -6,12 +6,18 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { FileText, Clock, CheckCircle, MessageSquare, Plus, Activity } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import { useSearchParams } from 'next/navigation'
+import { isDemoMode, MOCK_DASHBOARD_DATA } from '@/lib/utils/demo'
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [data, setData] = useState<any>(null)
+  const searchParams = useSearchParams()
+  const demoMode = isDemoMode(searchParams)
+  
+  const [isLoading, setIsLoading] = useState(!demoMode)
+  const [data, setData] = useState<any>(demoMode ? MOCK_DASHBOARD_DATA : null)
 
   useEffect(() => {
+    if (demoMode) return;
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('accessToken')
@@ -47,9 +53,15 @@ export default function DashboardPage() {
           <h1>Welcome back</h1>
           <p>Here's what's happening with your projects.</p>
         </div>
-        <Link href="/requests/new">
-          <Button leftIcon={<Plus size={18} />}>New Request</Button>
-        </Link>
+        {!demoMode ? (
+          <Link href="/requests/new">
+            <Button leftIcon={<Plus size={18} />}>New Request</Button>
+          </Link>
+        ) : (
+          <Button leftIcon={<Plus size={18} />} disabled variant="secondary">
+            New Request (Demo)
+          </Button>
+        )}
       </header>
 
       {/* Stats Grid */}
@@ -113,8 +125,20 @@ export default function DashboardPage() {
       </section>
 
       <style jsx>{`
-        .dashboard-content { display: flex; flex-direction: column; gap: var(--space-12); }
+        .dashboard-content { display: flex; flex-direction: column; gap: var(--space-8); }
         .dashboard-header { display: flex; justify-content: space-between; align-items: flex-end; }
+        
+        .demo-banner {
+          background: rgba(0, 255, 157, 0.1);
+          border: 1px solid rgba(0, 255, 157, 0.2);
+          color: var(--mint-primary);
+          padding: 12px 20px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 14px;
+        }
         .dashboard-header h1 { font-size: 32px; margin-bottom: var(--space-1); }
         .dashboard-header p { color: var(--text-secondary); }
 

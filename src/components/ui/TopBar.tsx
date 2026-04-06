@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { Bell, Search, User, Settings, LogOut, CheckCircle2, Clock, X, MessageSquare, Loader2 } from 'lucide-react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { isDemoMode, getDemoUrl } from '@/lib/utils/demo'
 
 const GooeyNav = dynamic(() => import('./GooeyNav'), { ssr: false })
 
 export const TopBar: React.FC = () => {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const demoMode = isDemoMode(searchParams)
   const isAdmin = pathname?.startsWith('/admin')
   const [searchValue, setSearchValue] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
@@ -83,106 +86,120 @@ export const TopBar: React.FC = () => {
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <Link href={isAdmin ? '/admin' : '/dashboard'} className="logo" style={{ color: 'var(--mint-primary)', textShadow: 'var(--mint-glow)', fontSize: '32px', fontWeight: 900, letterSpacing: '0.1em' }}>
+        <Link href={getDemoUrl(isAdmin ? '/admin' : '/dashboard', demoMode)} className="logo" style={{ color: 'var(--mint-primary)', textShadow: 'var(--mint-glow)', fontSize: '32px', fontWeight: 900, letterSpacing: '0.1em' }}>
           MINT
         </Link>
-        <div style={{ position: 'relative', marginTop: '-4px' }}>
-          <GooeyNav 
-            items={navItems} 
-            initialActiveIndex={getActiveIndex()} 
-            particleCount={10}
-          />
-        </div>
+        {!demoMode && (
+          <div style={{ position: 'relative', marginTop: '-4px' }}>
+            <GooeyNav 
+              items={navItems} 
+              initialActiveIndex={getActiveIndex()} 
+              particleCount={10}
+            />
+          </div>
+        )}
       </div>
 
       <div className="topbar-right">
-        <div className="search-wrapper">
-          <div 
-            className={`search-container ${searchValue ? 'has-value' : ''}`}
-            onClick={() => searchInputRef.current?.focus()}
-          >
-            <Search size={16} className="search-icon" />
-            <input 
-              ref={searchInputRef}
-              type="text" 
-              placeholder="Search..." 
-              className="search-input"
-              value={searchValue}
-              onChange={e => setSearchValue(e.target.value)}
-              onFocus={() => { if (searchValue) setShowSearchResults(true) }}
-              onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-            />
-          </div>
+        {!demoMode && (
+          <>
+            <div className="search-wrapper">
+              <div 
+                className={`search-container ${searchValue ? 'has-value' : ''}`}
+                onClick={() => searchInputRef.current?.focus()}
+              >
+                <Search size={16} className="search-icon" />
+                <input 
+                  ref={searchInputRef}
+                  type="text" 
+                  placeholder="Search..." 
+                  className="search-input"
+                  value={searchValue}
+                  onChange={e => setSearchValue(e.target.value)}
+                  onFocus={() => { if (searchValue) setShowSearchResults(true) }}
+                  onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+                />
+              </div>
 
-          {showSearchResults && (
-            <div className="search-dropdown">
-              {isSearching ? (
-                <div className="search-loading"><Loader2 className="spinner" size={16} /> Searching...</div>
-              ) : searchResults.length > 0 ? (
-                <div className="search-results-list">
-                  {searchResults.map(req => (
-                    <Link key={req.id} href={isAdmin ? `/admin/requests/${req.id}` : `/requests/${req.id}`} className="search-result-item" onClick={() => {setSearchValue(''); setShowSearchResults(false)}}>
-                      <div className="search-result-title">{req.title}</div>
-                      <div className="search-result-meta">{req.category} &bull; {req.status.replace('_', ' ')}</div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="search-no-results">No requests found</div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="notification-wrapper">
-          <button className="notification-btn">
-            <Bell size={18} />
-            {notifications.length > 0 && <span className="badge" />}
-          </button>
-          <div className="dropdown notif-dropdown">
-            <div className="notif-header">
-              <span>Notifications</span>
-              {notifications.length > 0 && (
-                <button className="clear-all-btn" onClick={() => setNotifications([])}>Clear All</button>
-              )}
-            </div>
-            <div className="notif-body">
-              {notifications.length === 0 ? (
-                <p className="empty-notif">You're all caught up!</p>
-              ) : (
-                <div className="notif-list">
-                  {notifications.slice(0, 4).map(notif => (
-                    <div key={notif.id} className="notif-item">
-                       <div className="notif-icon">
-                         {notif.type === 'success' ? <CheckCircle2 size={16} className="text-success" /> : 
-                          notif.type === 'message' ? <MessageSquare size={16} className="text-info" /> :
-                          <Clock size={16} className="text-info" />}
-                       </div>
-                       <div className="notif-content">
-                         <div className="notif-title">{notif.title}</div>
-                         <div className="notif-desc">{notif.message}</div>
-                         <div className="notif-time">{notif.time}</div>
-                       </div>
-                       <button className="notif-clear" onClick={(e) => clearNotification(e, notif.id)}>
-                         <X size={14} />
-                       </button>
+              {showSearchResults && (
+                <div className="search-dropdown">
+                  {isSearching ? (
+                    <div className="search-loading"><Loader2 className="spinner" size={16} /> Searching...</div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="search-results-list">
+                      {searchResults.map(req => (
+                        <Link key={req.id} href={isAdmin ? `/admin/requests/${req.id}` : `/requests/${req.id}`} className="search-result-item" onClick={() => {setSearchValue(''); setShowSearchResults(false)}}>
+                          <div className="search-result-title">{req.title}</div>
+                          <div className="search-result-meta">{req.category} &bull; {req.status.replace('_', ' ')}</div>
+                        </Link>
+                      ))}
                     </div>
-                  ))}
+                  ) : (
+                    <div className="search-no-results">No requests found</div>
+                  )}
                 </div>
               )}
             </div>
-          </div>
-        </div>
+
+            <div className="notification-wrapper">
+              <button className="notification-btn">
+                <Bell size={18} />
+                {notifications.length > 0 && <span className="badge" />}
+              </button>
+              <div className="dropdown notif-dropdown">
+                <div className="notif-header">
+                  <span>Notifications</span>
+                  {notifications.length > 0 && (
+                    <button className="clear-all-btn" onClick={() => setNotifications([])}>Clear All</button>
+                  )}
+                </div>
+                <div className="notif-body">
+                  {notifications.length === 0 ? (
+                    <p className="empty-notif">You're all caught up!</p>
+                  ) : (
+                    <div className="notif-list">
+                      {notifications.slice(0, 4).map(notif => (
+                        <div key={notif.id} className="notif-item">
+                           <div className="notif-icon">
+                             {notif.type === 'success' ? <CheckCircle2 size={16} className="text-success" /> : 
+                              notif.type === 'message' ? <MessageSquare size={16} className="text-info" /> :
+                              <Clock size={16} className="text-info" />}
+                           </div>
+                           <div className="notif-content">
+                             <div className="notif-title">{notif.title}</div>
+                             <div className="notif-desc">{notif.message}</div>
+                             <div className="notif-time">{notif.time}</div>
+                           </div>
+                           <button className="notif-clear" onClick={(e) => clearNotification(e, notif.id)}>
+                             <X size={14} />
+                           </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
         
         <div className="user-profile">
           <div className="avatar">
             <User size={16} />
           </div>
           <div className="dropdown">
-            <Link href={isAdmin ? '/admin/settings' : '/settings'} className="dropdown-item">
-              <Settings size={14} />
-              <span>Settings</span>
-            </Link>
+            {!demoMode && (
+              <Link href={isAdmin ? '/admin/settings' : '/settings'} className="dropdown-item">
+                <Settings size={14} />
+                <span>Settings</span>
+              </Link>
+            )}
+            {demoMode && (
+              <div className="dropdown-item" style={{ pointerEvents: 'none', opacity: 0.7 }}>
+                <User size={14} />
+                <span>Demo Account</span>
+              </div>
+            )}
             <div className="dropdown-divider" />
             <button className="dropdown-item text-error" onClick={handleLogout}>
               <LogOut size={14} />
