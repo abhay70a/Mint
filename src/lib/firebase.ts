@@ -3,12 +3,12 @@ import { initializeApp, getApps } from "firebase/app";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyC_AOmQcywJg67jZ_yOnd8btIcTK9q7BjY",
-  authDomain: "mint-9e870.firebaseapp.com",
-  projectId: "mint-9e870",
-  storageBucket: "mint-9e870.firebasestorage.app",
-  messagingSenderId: "600811406430",
-  appId: "1:600811406430:web:680374ca8547143ad4a0cf"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
 // Initialize Firebase (ensure we don't initialize multiple times during hot reloads)
