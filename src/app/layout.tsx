@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -31,8 +32,12 @@ export default function RootLayout({
           extraScale={1.3}
         >
           <ToastProvider>
-            <GlobalNavbar />
-            <GlobalTopBar />
+            <Suspense fallback={null}>
+              <GlobalNavbar />
+            </Suspense>
+            <Suspense fallback={null}>
+              <GlobalTopBar />
+            </Suspense>
             {children}
           </ToastProvider>
         </ClickSparkProvider>
