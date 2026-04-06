@@ -1,13 +1,12 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 
 import { JWTPayload, verifyAccessToken } from '@/lib/auth/jwt'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<JWTPayload | null>(null)
   const router = useRouter()
-
   const searchParams = useSearchParams()
   const isDemo = searchParams.get('mode') === 'demo'
 
@@ -36,7 +35,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="dashboard-layout">
       <main className="main-content">
-
         <div className="page-container">
           {children}
         </div>
@@ -61,5 +59,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
       `}</style>
     </div>
+  )
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <DashboardLayoutContent>
+        {children}
+      </DashboardLayoutContent>
+    </Suspense>
   )
 }
